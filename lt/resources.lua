@@ -116,7 +116,8 @@ return module(function (resources)
 		})
 		
 		-- load the ldata file and execute it within the sandbox
-		sandbox:execute_file(basepath .. name .. asset_suffix .. '_description.ldata')
+		local ldata = love.filesystem.read(basepath .. name .. asset_suffix .. '_description.ldata')
+		sandbox:execute_string(ldata)
 		
 		-- once all clips are loaded link clip data directly to other image and clip_data
 		-- also record frame numbers for all ranges based on labels
