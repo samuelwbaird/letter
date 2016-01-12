@@ -1,0 +1,17 @@
+-- file header
+version = 1
+clip_style = 'x,y,sx,sy,r,a'
+
+-- all texture atlases to load
+sheet('title_1_x3.png', 2048, 2048, {
+{ name = "play_button0001", xy = {-0,-0,158,38}, uv = {0,0,0.2314453125,0.0556640625} },
+{ name = "play_button0002", xy = {-0,-0,158,38}, uv = {0.23291015625,0,0.46435546875,0.0556640625} },
+{ name = "title_screen", xy = {-0,-0,640,384}, uv = {0,0.05712890625,0.9375,0.61962890625} },
+})
+
+-- animated clips / frame descriptions
+clip('play_button', {
+  { --[[label = '',]] content = { { --[[instance = nil,]] image = 'play_button0001', transform = { 0, 0, 1, 1, 0, 1 } } } },
+  { --[[label = '',]] content = { { --[[instance = nil,]] image = 'play_button0002', transform = { 0, 0, 1, 1, 0, 1 } } } },
+})
+
