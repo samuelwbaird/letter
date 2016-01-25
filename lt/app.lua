@@ -103,7 +103,7 @@ return class(function (app)
 					error('uninitialised read from global ' .. tostring(property), 2)
 				end,
 				__newindex = function (obj, property, value)
-					error('write to global' .. tostring(property), 2)
+					error('uninitialise write to global ' .. tostring(property), 2)
 				end,
 			})
 			app:set_scene(app.initial_scene)
