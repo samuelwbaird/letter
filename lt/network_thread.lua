@@ -78,10 +78,12 @@ local request_thread = class(function (request_thread)
 					break
 				end
 				
-				local success, result = pcall(response_function, input.params)
+				local success, result, r2, r3, r4, r5, r6 = pcall(response_function, input.params)
 				local response = { did_complete = success, request_id = input.request_id }
 				if success then
 					response.result = result
+					-- additional return values if supplied
+					response.r2, response.r3, response.r4, response.r5, response.r6 = r2, r3, r4, r5, r6
 				else
 					print('error during response in request_thread\n' .. result)
 					response.error = result
@@ -127,6 +129,23 @@ local request_thread = class(function (request_thread)
 		end
 	end
 	
+	function request_thread:yield_request(params)
+		-- structure a request_thread request to yield the current coroutine until complete
+		local is_complete = false
+		local r1, r2, r3, r4, r5, r6
+		self:request(params, function (...)
+			is_complete = true
+			r1, r2, r3, r4, r5, r6 = ...
+		end)
+		
+		-- yield this coroutine until the request is complete
+		while not is_complete do
+			coroutine.yield()
+		end
+		
+		return r1, r2, r3, r4, r5, r6
+	end
+	
 	function request_thread:cancel(task)
 		if task then
 			-- cancel a specific task
@@ -169,7 +188,7 @@ local request_thread = class(function (request_thread)
 				local on_complete = task.on_complete
 				self:cancel(task)
 				if response.did_complete and on_complete then
-					on_complete(response.result)
+					on_complete(response.result, response.r2, response.r3, response.r4, response.r5, response.r6)
 				end
 			end
 		end
@@ -195,7 +214,7 @@ local wrapped_socket = class(function (wrapped_socket)
 	-- TODO: if luasec module is available then also support https connections here
 
 	function wrapped_socket:init()
-		self.timeout = 60
+		self.timeout = 30
 		self.real_socket = nil
 		self.host = nil
 		self.port = nil
@@ -286,11 +305,19 @@ local network_thread = class(function (network_thread)
 			-- add proxy methods on the thread object for the valid calls available
 			local proxy_methods = { 'get', 'post', 'http_request', 'msgpack_api', 'download' }
 			for _, proxy_method in ipairs(proxy_methods) do
+				-- callback version
 				thread[proxy_method] = function (thread, params, on_complete)
 					thread:request({
 						method = proxy_method,
 						params = params,
 					}, on_complete)
+				end
+				-- coroutine versions
+				thread['yield_' .. proxy_method] = function (thread, params, on_complete)
+					return thread:yield_request({
+						method = proxy_method,
+						params = params,
+					})
 				end
 			end
 			return thread
@@ -341,21 +368,21 @@ local network_thread = class(function (network_thread)
 		post_data = post_data and msgpack.pack(post_data)
 		local response = self:http_request(url, 'POST', headers, post_data)
 		if response.body and #response.body > 0 then
-			return msgpack.unpack(response.body)
+			return ((response.body and #response.body > 0) and msgpack.unpack(response.body) or nil), response.status, response.headers
 		end
 	end
 	
 	function network_thread:download(url, file_path)
-		local result = self.http_request(url, 'GET')
-		if result.body then
-			result.saved = love.filesystem.write(file_path, result.body)
+		local response = self.http_request(url, 'GET')
+		if response.body then
+			response.saved = love.filesystem.write(file_path, response.body)
 		end
 		
 		return {
-			status = status,
-			downloaded = (status == 200),
-			saved = result.saved,
-			size = #result.body,
+			status = response.status,
+			downloaded = (response.status == 200),
+			saved = response.saved,
+			size = #response.body,
 		}
 	end
 	

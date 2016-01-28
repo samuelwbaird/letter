@@ -111,6 +111,20 @@ return class(function (app_node)
 			end, ...)
 		end
 	end
+	
+	function app_node:delegate(method)
+		-- create a delegate function that will be nullified when this app node is disposed
+		local inner = { self, method }
+		self:add_disposable(function ()
+			inner.self = nil
+			inner.method = nil
+		end)
+		return function (...)
+			if inner.self then
+				inner.method(inner.self, ...)
+			end
+		end
+	end
 
 	function app_node:dispose()
 		local children = rawget(self, 'children')
