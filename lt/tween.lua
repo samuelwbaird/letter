@@ -118,7 +118,7 @@ end)
 local manager = class(function (manager)
 	
 	function manager:init()
-		self.tweens = dispatch.update_set(tween.update)
+		self.tweens = dispatch.update_list(tween.update)
 	end
 	
 	function manager:add(tween)

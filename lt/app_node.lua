@@ -17,7 +17,7 @@ local tween = require('lt.tween')
 return class(function (app_node)
 
 	-- lazy properties created when needed
-	app_node:add_lazy_property('children', dispatch.update_set)
+	app_node:add_lazy_property('children', dispatch.update_list)
 	app_node:add_lazy_property('view', display_list)
 	app_node:add_lazy_property('event_handler', event_dispatch.event_handler)
 	app_node:add_lazy_property('dispatch', dispatch)

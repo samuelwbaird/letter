@@ -214,7 +214,7 @@ local wrapped_socket = class(function (wrapped_socket)
 	-- TODO: if luasec module is available then also support https connections here
 
 	function wrapped_socket:init()
-		self.timeout = 30
+		self.timeout = 20
 		self.real_socket = nil
 		self.host = nil
 		self.port = nil
