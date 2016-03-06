@@ -12,9 +12,10 @@ local dispatch = require('util.dispatch')
 local display_data = require('lt.display_data')
 local display_list = require('lt.display_list')
 local event_dispatch = require('lt.event_dispatch')
-local render = require('lt.render')
-local resources = require('lt.resources')
 local button = require('lt.button')
+
+local render = require('lt.love.render')
+local resources = require('lt.love.resources')
 
 return class(function (app)
 
@@ -138,6 +139,7 @@ return class(function (app)
 					end
 			
 					for frame = 1, frames do
+						app.time = love.timer.getTime()
 						-- some compatability with love timer class
 						love.timer.step()
 				

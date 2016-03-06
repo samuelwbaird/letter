@@ -5,7 +5,7 @@
 -- as unpacked values (although this is less convenient in code)
 --
 -- as this is working with simple scale, rotate transform values in
--- the main love drawing methods, these transform types use those
+-- the main drawing methods, these transform types use those
 -- sort of values instead of an affine or 3D matrix
 --
 -- copyright 2016 Samuel Baird MIT Licence

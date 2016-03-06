@@ -1,6 +1,8 @@
 -- example main module for love2D
 -- copyright 2016 Samuel Baird MIT Licence
 
+
+local platform = require('lt.love.platform')
 local app = require('lt.app')
 
 app.launch(

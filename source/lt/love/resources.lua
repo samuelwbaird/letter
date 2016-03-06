@@ -38,6 +38,9 @@ return module(function (resources)
 	function resources.get_asset_suffix()
 		return asset_suffix
 	end	
+	
+	function resources.load_font(name, size)
+	end
 
 	function resources.load_spritesheet(basepath, name, prefix)
 		debug_output('load ' .. name .. asset_suffix .. '_description.ldata')

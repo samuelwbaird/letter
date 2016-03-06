@@ -111,7 +111,7 @@ return class(function (touch_area)
 		self.touch_id = id
 		
 		self.touch_position = { x, y }
-		self.touch_time = love.timer.getTime()
+		self.touch_time = app.time
 		
 		self.touch_start_position = { x, y }
 		self.touch_start_time = self.touch_time
@@ -153,7 +153,7 @@ return class(function (touch_area)
 		
 		self.is_touch_over = self.area_test(x, y)
 		self.touch_position = { x, y }
-		self.touch_time = love.timer.getTime()
+		self.touch_time = app.time
 		
 		self.drag_distance = { x - self.touch_start_position[1], y - self.touch_start_position[2] }
 		self.move_distance = { x - previous_position[1], y - previous_position[2] }
