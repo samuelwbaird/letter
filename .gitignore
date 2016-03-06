@@ -1,1 +1,6 @@
 stones.love
+example/build/love/assets
+example/build/love/core
+example/build/love/game
+example/build/love/util
+example/build/love/lt
