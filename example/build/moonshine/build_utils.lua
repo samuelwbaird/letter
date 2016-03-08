@@ -2,6 +2,14 @@ local lfs = require('lfs')
 assert(lfs, 'build utils requires lfs, Lua file system module')
 
 local preload_source = {}
+local output_path = ''
+
+local function output(set_output_path)
+	output_path = set_output_path
+	if output_path ~= '' and output_path:sub(-1, -1) ~= '/' then
+		output_path = output_path .. '/'
+	end
+end
 
 local function files(path, dest_path, filter)
 	local out = {}
@@ -54,14 +62,14 @@ local function add_to_preload(file)
 end
 
 local function add_asset_path(source_path, dest_path, filter)
-	shell('mkdir -p "' .. dest_path .. '"')
+	shell('mkdir -p "' .. (output_path .. dest_path) .. '"')
 	for _, file in pairs(files(source_path, dest_path, filter)) do
 		-- luadata files to be compiled into shared source
 		-- all other files copied
 		if file.extension == 'ldata' then
 			add_to_preload(file)
 		else
-			copy(file.absolute, file.filepath)
+			copy(file.absolute, output_path .. file.filepath)
 		end
 	end
 end
@@ -72,8 +80,7 @@ local function add_source_path(source_path, dest_path, filter)
 	end
 end
 
-local function html(main, output_folder, content_folder)
-	content_folder = content_folder or ''
+local function html(main)
 	-- create a temporary source file with all lua content
 	local temp = assert(io.open('source.lua', 'wb'), 'write temp source.lua file')
 
@@ -87,13 +94,12 @@ local function html(main, output_folder, content_folder)
 
 	-- moonshine compile step and cleanup
 	temp:close()	
-	local full_path = output_folder .. '/' .. content_folder
-	shell('mkdir -p "' .. full_path .. '"')
-	shell('export PATH=$PATH:/usr/local/bin/; moonshine distil -o "' .. full_path .. '/source.json" source.lua')
-	-- os.remove('source.lua')
+	shell('mkdir -p "' .. output_path .. '"')
+	shell('export PATH=$PATH:/usr/local/bin/; moonshine distil -o "' .. output_path .. '/source.json" source.lua')
 end
 
 return {
+	output = output,
 	add_asset_path = add_asset_path,
 	add_source_path = add_source_path,
 	html = html,
