@@ -7,4 +7,5 @@ example/build/love/util
 example/build/love/lt
 
 example/build/moonshine/source.lua
-example/build/moonshine/dist/stones/
+example/build/moonshine/dist/source.json
+example/build/moonshine/dist/assets

@@ -21,7 +21,7 @@ local function files(path, dest_path, filter)
 					extension = file:match('.-%.(.*)$'),
 				}
 				data.name = data.extension and file:sub(1, (#file - #data.extension) - 1) or file
-				if not filter or (type(filter) == 'string' and file:match(data.filepath)) or (type(filter) == 'function' and filter(data)) then
+				if not filter or (type(filter) == 'string' and data.filepath:match(filter)) or (type(filter) == 'function' and filter(data)) then
 					out[#out + 1] = data
 				end
 			end
@@ -37,6 +37,10 @@ local function shell(command)
 	process:close()
 end
 
+local function copy(source, dest)
+	shell('cp "' .. source .. '" "' .. dest .. '"')
+end
+
 local function add_to_preload(file)
 	local input = assert(io.open(file.absolute, 'rb'), 'open file ' .. file.absolute)
 	local content = input:read('*a')
@@ -50,6 +54,16 @@ local function add_to_preload(file)
 end
 
 local function add_asset_path(source_path, dest_path, filter)
+	shell('mkdir -p "' .. dest_path .. '"')
+	for _, file in pairs(files(source_path, dest_path, filter)) do
+		-- luadata files to be compiled into shared source
+		-- all other files copied
+		if file.extension == 'ldata' then
+			add_to_preload(file)
+		else
+			copy(file.absolute, file.filepath)
+		end
+	end
 end
 
 local function add_source_path(source_path, dest_path, filter)
@@ -59,6 +73,7 @@ local function add_source_path(source_path, dest_path, filter)
 end
 
 local function html(main, output_folder, content_folder)
+	content_folder = content_folder or ''
 	-- create a temporary source file with all lua content
 	local temp = assert(io.open('source.lua', 'wb'), 'write temp source.lua file')
 

@@ -13,4 +13,4 @@ build.add_source_path('../../game', 'game')
 -- the top level lua script to launch the game
 -- the path where HTML template and output is
 -- the relative path from the output where game files should go (files in this folder will be overwritten)
-build.html('main.lua', 'dist', 'stones')	-- build to dist, game files in dist/game
+build.html('main.lua', 'dist')	-- build to dist
