@@ -3,6 +3,8 @@
 local class = require('core.class')
 local platform = require('lt.moonshine.platform')
 
+local display_data = require('lt.display_data')
+
 return class(function (resources)
 
 	local asset_suffix = ''
@@ -60,7 +62,7 @@ return class(function (resources)
 				debug_output('  sheet ' .. filename)
 				
 				-- load the texture itself
-				local texture = love.graphics.newImage(basepath .. filename)
+				local texture = platform.create_texture(basepath .. filename, width, height)
 				loaded_sheet.textures[filename] = texture
 				
 				-- register all the sprites in the texture
@@ -71,12 +73,12 @@ return class(function (resources)
 					local width_scale = (image.xy[3] - image.xy[1]) / ((image.uv[3] - image.uv[1]) * texture:getWidth())
 					local height_scale = (image.xy[4] - image.xy[2]) / ((image.uv[4] - image.uv[2]) * texture:getHeight())
 					
-					local quad = love.graphics.newQuad(
-						image.uv[1] * texture:getWidth() * width_scale,			-- scaled offset
-						image.uv[2] * texture:getHeight() * height_scale,		-- scaled offset
-						image.xy[3] - image.xy[1], image.xy[4] - image.xy[2],	-- logical size
-						texture:getWidth() * width_scale,		-- scaled texture size
-						texture:getHeight() * height_scale	-- scaled texture size
+					
+					local quad = platform.create_quad(
+						image.uv[1] * texture.getWidth(),
+						image.uv[2] * texture.getHeight(),
+						(image.uv[3] - image.uv[1]) * texture.getWidth(),
+						(image.uv[4] - image.uv[2]) * texture.getHeight()
 					)
 					
 					-- create and cache the image data object

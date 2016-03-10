@@ -97,11 +97,12 @@ js_bridge.timer = modul(function (timer) {
 			if (callback != _callback) {
 				return;
 			}
+			requestAnimFrame(next_frame);
 			
 		    var now = Date.now();
 		    var dt = (now - last) / 1000.0;
-			callback.call(now, dt);
-			requestAnimFrame(next_frame);
+			last = now;
+			callback.call("something", now, dt);
 		}
 		requestAnimFrame(next_frame);
 	}

@@ -265,7 +265,7 @@ local image = class.derive(display_list, function (image)
 	end
 
 	function image:render_inner(renderer, rx, ry, rscale_x, rscale_y, rr, ra)
-		renderer:draw_batched_quad(self.image_data.texture, self.image_data.quad, rx, ry, rr, rscale_x, rscale_y, self.image_data.ox, self.image_data.oy, ra)
+		renderer:draw_quad(self.image_data.texture, self.image_data.quad, rx, ry, rr, rscale_x, rscale_y, self.image_data.ox, self.image_data.oy, ra)
 	end
 
 	function image:content_bounds()
@@ -495,9 +495,7 @@ local rect = class.derive(display_list, function (rect)
 	end
 	
 	function rect:render_inner(renderer, rx, ry, rscale_x, rscale_y, rr, ra)
-		renderer:begin_unbatched(rx, ry, rscale_x, rscale_y, rr)
-		love.graphics.setColor(self.color:unpack_with_alpha(ra))
-		love.graphics.rectangle("fill", 0, 0, self.width, self.height)
+		renderer:draw_rect(self, rx, ry, rscale_x, rscale_y, rr, ra)
 	end
 	
 	function rect:content_bounds()
@@ -517,9 +515,7 @@ local circle = class.derive(display_list, function (circle)
 	end
 	
 	function circle:render_inner(renderer, rx, ry, rscale_x, rscale_y, rr, ra)
-		renderer:begin_unbatched(rx, ry, rscale_x, rscale_y, rr)
-		love.graphics.setColor(self.color:unpack_with_alpha(ra))
-		love.graphics.circle("fill", 0, 0, self.radius, math.clamp(self.radius * 0.25, 30, 100))
+		render:draw_circle(self, rx, ry, rscale_x, rscale_y, rr, ra)
 	end
 	
 	function circle:content_bounds()
@@ -542,20 +538,7 @@ local label = class.derive(display_list, function (label)
 	
 	function label:render_inner(renderer, rx, ry, rscale_x, rscale_y, rr, ra)
 		if self.text then
-			-- internally fonts may be at a different scale (eg. due to retina)
-			local asset_scale = self.font.asset_scale
-			
-			renderer:begin_unbatched(rx, ry, rscale_x / asset_scale, rscale_y / asset_scale, rr)
-			love.graphics.setFont(self.font:cached_font_object())
-			love.graphics.setColor(self.font.color:unpack_with_alpha(ra))
-			
-			if self.align == 'center' then
-				love.graphics.printf(self.text, self.wrap_width * -0.5 * asset_scale, 0, self.wrap_width * asset_scale, self.align)
-			elseif self.align == 'right' then
-				love.graphics.printf(self.text, self.wrap_width * -1 * asset_scale, 0, self.wrap_width * asset_scale, self.align)
-			else
-				love.graphics.printf(self.text, 0, 0, self.wrap_width * asset_scale, self.align)
-			end
+			renderer:draw_label(self, rx, ry, rscale_x, rscale_y, rr, ra)
 		end
 	end
 	

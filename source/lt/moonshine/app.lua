@@ -156,7 +156,7 @@ return class(function (app)
 		end
 	end
 
-	function app:render(renderer)
+	function app:render()
 		if self.paused then
 			return
 		end
