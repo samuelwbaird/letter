@@ -37,6 +37,7 @@ return class(function (app)
 		
 		-- start the first scene
 		app:set_scene(app.initial_scene)
+		return app
 	end
 	
 	function app:init(reference_screen_size, asset_scales, initial_scene)

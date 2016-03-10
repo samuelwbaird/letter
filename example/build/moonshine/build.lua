@@ -12,4 +12,5 @@ build.add_source_path('../../../source/lt', 'lt')
 build.add_source_path('../../game', 'game')
 
 -- for HTML output specify, the top level lua script to launch the game
+build.add_source_path('.', '', 'preload_scene')
 build.html('main.lua')

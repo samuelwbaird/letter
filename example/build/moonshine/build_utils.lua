@@ -23,11 +23,15 @@ local function files(path, dest_path, filter)
 			else
 				local data = {
 					filename = file,
-					filepath = dest_path .. '/' .. file,
 					path = dest_path,
 					absolute = path .. '/' .. file,
 					extension = file:match('.-%.(.*)$'),
 				}
+				if dest_path == '' or dest_path == nil then
+					data.filepath = file
+				else
+					data.filepath = dest_path .. '/' .. file	
+				end
 				data.name = data.extension and file:sub(1, (#file - #data.extension) - 1) or file
 				if not filter or (type(filter) == 'string' and data.filepath:match(filter)) or (type(filter) == 'function' and filter(data)) then
 					out[#out + 1] = data
@@ -54,11 +58,26 @@ local function add_to_preload(file)
 	local content = input:read('*a')
 	input:close()
 	
-	preload_source[#preload_source + 1] = 'package.preload[\'' .. file.path:gsub('/', '.') .. (file.path and '.' or '') .. file.name .. '\'] = function ()\n'
-	preload_source[#preload_source + 1] = '\n-------- ' .. file.path:gsub('/', '.') .. (file.path and '.' or '') .. file.name .. ' ---------------------------\n'
+	preload_source[#preload_source + 1] = 'package.preload[\'' .. file.path:gsub('/', '.') .. (file.path ~= '' and '.' or '') .. file.name .. '\'] = function ()\n'
+	preload_source[#preload_source + 1] = '\n-------- ' .. file.path:gsub('/', '.') .. (file.path ~= '' and '.' or '') .. file.name .. ' ---------------------------\n'
 	preload_source[#preload_source + 1] = content
-	preload_source[#preload_source + 1] = '\nend\n'
-			
+	preload_source[#preload_source + 1] = '\nend\n'			
+end
+
+local function add_lua_data(file)
+	local input = assert(io.open(file.absolute, 'rb'), 'open file ' .. file.absolute)
+	local content = input:read('*a')
+	input:close()
+	
+	-- can't get proper sandboxing with moonshine so we'll just sub in the globals we want
+	preload_source[#preload_source + 1] = 'lua_data = lua_data or {}'
+	preload_source[#preload_source + 1] = 'lua_data[\'' .. file.path:gsub('/', '.') .. (file.path ~= '' and '.' or '') .. file.name .. '\'] = function (dsl_globals)'
+	preload_source[#preload_source + 1] = 'dsl_globals = dsl_globals or {} local keep_globals = {} for k, v in pairs(dsl_globals) do keep_globals[k] = rawget(_G, k) rawset(_G, k, v) end'
+		
+	preload_source[#preload_source + 1] = '\n-------- ' .. file.path:gsub('/', '.') .. (file.path ~= '' and '.' or '') .. file.name .. ' ---------------------------\n'
+	preload_source[#preload_source + 1] = content
+	preload_source[#preload_source + 1] = 'for k, v in pairs(dsl_globals) do rawset(_G, k, keep_globals[k]) end'
+	preload_source[#preload_source + 1] = 'end\n'			
 end
 
 local function add_asset_path(source_path, dest_path, filter)
@@ -67,7 +86,7 @@ local function add_asset_path(source_path, dest_path, filter)
 		-- luadata files to be compiled into shared source
 		-- all other files copied
 		if file.extension == 'ldata' then
-			add_to_preload(file)
+			add_lua_data(file)
 		else
 			copy(file.absolute, output_path .. file.filepath)
 		end

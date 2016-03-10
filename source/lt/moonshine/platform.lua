@@ -8,9 +8,17 @@ end
 local platform = {
 	moonshine = true,
 	screen = js_bridge.screen,
+	image = js_bridge.image,
+	timer = js_bridge.timer,
 }
 
 -- assign global ref if we can
 rawset(_G, 'platform', platform)
+
+platform.timer.start(function (time, delta)
+	if app then
+		app:update()
+	end
+end)
 
 return platform
