@@ -5,6 +5,8 @@ var js_bridge = {}; window.js_bridge = js_bridge;
 
 // shared environment within this file
 var shared = {};
+var canvas = null;
+var ctx = null;
 
 // module pattern
 var modul = function (module_constructor) { var mod = {}; module_constructor(mod); return mod; };
@@ -26,26 +28,45 @@ var klass = function (class_constructor) {
 // -- screen module -----------------------------------------------
 
 js_bridge.screen = modul(function (screen) {
-	var canvas, ctx;
-	
 	screen.createCanvas = function (parent, width, height) {
 		canvas = document.createElement("canvas");
 		ctx = canvas.getContext("2d");
 		canvas.width = width;
 		canvas.height = height;
 		parent.appendChild(canvas);
+		
+		canvas.addEventListener("mousedown", function (evt) { screen.touch_event('touch_begin', evt); }, false);
+		canvas.addEventListener("mousemove", function (evt) { screen.touch_event('touch_move', evt); }, false);
+		canvas.addEventListener("mouseup", function (evt) { screen.touch_event('touch_end', evt); }, false);
+		
+		return canvas;
 	};
 	
 	screen.getWidth = function () { return canvas.width; };
 	screen.getHeight = function () { return canvas.height; };
+	
+	var callback = null;
+	
+	screen.touch_event = function (event_name, evt) {
+		evt.preventDefault();
+		if (callback != null) {
+			callback.call('something', event_name, evt.pageX - canvas.offsetLeft, evt.pageY - canvas.offsetTop, 1);
+		}
+	};
+	
+	// pipe through touch events
+	screen.set_touch_listener = function (touch_callback) {
+		callback = touch_callback;
+		callback.retain();
+	};
 });
 
-// -- image module -----------------------------------------------
+// -- graphics module --------------------------------------------
 
-js_bridge.image = modul(function (image) {
+js_bridge.graphics = modul(function (graphics) {
 	var images = {};
 	
-	image.require = function (url) {
+	graphics.require_image = function (url) {
 		var img = images[url];
 		
 		if (img == null) {
@@ -65,8 +86,22 @@ js_bridge.image = modul(function (image) {
 		} else {
 			return null;
 		}
-	}
-
+	};
+	
+	graphics.draw_quad = function (url, qx, qy, qw, qh, ix, iy, iw, ih, x, y, sx, sy) {
+		var img = images[url];
+		if (img == null) {
+			return;
+		}
+		
+	    ctx.save();
+		ctx.translate(x, y);
+	    ctx.scale(sx, sy);
+		ctx.drawImage(img, qx, qy, qw, qh, ix, iy, iw, ih);
+	    ctx.restore();
+	};
+	
+	
 });
 
 // -- timer module -----------------------------------------------
@@ -85,33 +120,27 @@ js_bridge.timer = modul(function (timer) {
 	        };
 	}) ();
 	
-	var _callback;
+	var _active = false;
 	
 	timer.start = function (callback) {
-		timer.stop();
+		_active = true;
 		
-		_callback = callback;
-		_callback.retain();
 		var last = Date.now();
 		var next_frame = function () {
-			if (callback != _callback) {
+			if (!_active) {
 				return;
 			}
 			requestAnimFrame(next_frame);
 			
+			_active = false;
 		    var now = Date.now();
 		    var dt = (now - last) / 1000.0;
 			last = now;
 			callback.call("something", now, dt);
+			// make sure this stops after errors...
+			_active = true;
 		}
 		requestAnimFrame(next_frame);
-	}
-	
-	timer.stop = function () {
-		if (_callback != null) {
-			_callback.release();
-			_callback = null;
-		}
 	}
 	
 });

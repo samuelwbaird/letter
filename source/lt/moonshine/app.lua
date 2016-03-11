@@ -55,6 +55,9 @@ return class(function (app)
 		}
 
 		-- set up the root view and scaling
+		self.reference_screen_size = reference_screen_size
+		self.asset_scales = asset_scales
+		
 		self:configure_screen_size(reference_screen_size, asset_scales)
 		print('screen ' .. self.screen.width .. ' x ' .. self.screen.height .. ' at ' .. self.screen.scale .. ' using ' .. resources.get_asset_suffix())
 	
@@ -69,6 +72,10 @@ return class(function (app)
 	
 		-- set the first scene
 		self.initial_scene = initial_scene
+	end
+	
+	function app:reconfigure_screen_size()
+		self:configure_screen_size(self.reference_screen_size, self.asset_scales)
 	end
 	
 	function app:configure_screen_size(reference_screen_size, asset_scales)

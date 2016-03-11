@@ -73,12 +73,13 @@ return class(function (resources)
 					local width_scale = (image.xy[3] - image.xy[1]) / ((image.uv[3] - image.uv[1]) * texture:getWidth())
 					local height_scale = (image.xy[4] - image.xy[2]) / ((image.uv[4] - image.uv[2]) * texture:getHeight())
 					
-					
 					local quad = platform.create_quad(
 						image.uv[1] * texture.getWidth(),
 						image.uv[2] * texture.getHeight(),
 						(image.uv[3] - image.uv[1]) * texture.getWidth(),
-						(image.uv[4] - image.uv[2]) * texture.getHeight()
+						(image.uv[4] - image.uv[2]) * texture.getHeight(),
+						image.xy[3] - image.xy[1],
+						image.xy[4] - image.xy[2]
 					)
 					
 					-- create and cache the image data object

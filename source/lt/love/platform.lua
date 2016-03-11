@@ -11,6 +11,13 @@ local platform = {
 		getWidth = function () return love.graphics.getWidth() end,
 		getHeight = function () return love.graphics.getHeight() end,
 	},
+	create_font = function (name, size)
+		if name then
+			return love.graphics.newFont(name, size)
+		else
+			return love.graphics.newFont(size)
+		end
+	end,
 }
 
 -- assign global ref if we can

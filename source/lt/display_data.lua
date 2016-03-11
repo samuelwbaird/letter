@@ -53,11 +53,7 @@ local font = class(function (font)
 		local key = (self.name or '') .. ':' .. self.size
 		local obj = font_cache:get(key)
 		if not obj then
-			if self.name then
-				obj = love.graphics.newFont(self.name, self.size * self.asset_scale)
-			else
-				obj = love.graphics.newFont(self.size * self.asset_scale)
-			end
+			obj = platform.create_font(self.name, self.size * self.asset_scale) 
 			font_cache:set(key, obj)
 		end
 		return obj
