@@ -45,18 +45,31 @@ platform.screen.set_touch_listener(function (event, x, y, id)
 	event_dispatch.shared_instance():defer(event, { id = id, x = x, y = y })
 end)
 
+
+local frame_count = 0
+local time_count = 0
+
 platform.timer.start(function (time, delta)
 	if app then
 		event_dispatch.shared_instance():dispatch_deferred()
 		app:reconfigure_screen_size()
 
-		local frames = math.ceil(delta / 16.7)
+		frame_count = frame_count + 1
+		time_count = time_count + delta
+		if frame_count % 100 == 0 then
+			print(frame_count / time_count .. ' fps')
+			frame_count = 0
+			time_count = 0
+		end
+
+		local frames = math.ceil(delta / 0.0167)
 		if frames > 4 then
 			frames = 4
 		end
 		for f = 1, frames do
-			app:update(16)
+			app:update()
 		end
+		
 		app:render()
 	end
 end)

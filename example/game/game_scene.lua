@@ -27,7 +27,6 @@ return class.derive(app_node, function (game_scene)
 		tiled_background.view.x = app.screen.width * 0.5
 		tiled_background.view.y = app.screen.height * 0.5
 		
-		
 		self.tiles = tiles()
 		self:add(self.tiles)
 		
