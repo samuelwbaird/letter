@@ -9,11 +9,11 @@ DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 cd $DIR
 
 # symbolic link the required paths into place for love
-ln -sf ../../game .
-ln -sf ../../../source/core .
-ln -sf ../../../source/util .
-ln -sf ../../../source/lt .
-ln -sf ../../assets .
+ln -sf ../game .
+ln -sf ../../source/core .
+ln -sf ../../source/util .
+ln -sf ../../source/lt .
+ln -sf ../assets .
 
 while [ 1 ]
 do

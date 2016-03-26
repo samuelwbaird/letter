@@ -14,8 +14,8 @@ local display_list = require('lt.display_list')
 local event_dispatch = require('lt.event_dispatch')
 local button = require('lt.button')
 
-local render = require('lt.love.render')
-local resources = require('lt.love.resources')
+local render = require('lt.render')
+local resources = require('lt.resources')
 
 return class(function (app)
 
@@ -201,8 +201,8 @@ return class(function (app)
 		self.screen.height = reference_screen_size.height
 	
 		-- adapt logical screen size to fill the screen at as close as possible to the reference size
-		local wscale = platform.screen.getWidth() / self.screen.width
-		local hscale = platform.screen.getHeight() / self.screen.height
+		local wscale = love.graphics.getWidth() / self.screen.width
+		local hscale = love.graphics.getHeight() / self.screen.height
 	
 		-- scale up by the lowest amount and adapt the other dimension
 		-- if the scale if very close to one of the asset scales then use it directly to get clearer graphics
@@ -212,8 +212,8 @@ return class(function (app)
 				self.screen.scale = asset_scale.scale
 			end
 		end		
-		self.screen.width = platform.screen.getWidth() / self.screen.scale
-		self.screen.height = platform.screen.getHeight() / self.screen.scale
+		self.screen.width = love.graphics.getWidth() / self.screen.scale
+		self.screen.height = love.graphics.getHeight() / self.screen.scale
 		self.root_view.scale = self.screen.scale
 	
 		-- select the correct asset suffix

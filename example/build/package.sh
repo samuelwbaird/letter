@@ -11,11 +11,11 @@ cd $DIR
 rm stones.love
 
 # symbolic link the required paths into place for zipping
-ln -sf ../../game .
-ln -sf ../../../source/core .
-ln -sf ../../../source/util .
-ln -sf ../../../source/lt .
-ln -sf ../../assets .
+ln -sf ../game .
+ln -sf ../../source/core .
+ln -sf ../../source/util .
+ln -sf ../../source/lt .
+ln -sf ../assets .
 
 # zip up the love file
 zip -r stones.love conf.lua main.lua core util lt game assets
