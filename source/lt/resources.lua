@@ -42,7 +42,7 @@ return module(function (resources)
 	function resources.load_font(name, size)
 	end
 
-	function resources.load_spritesheet(basepath, name, prefix)
+	function resources.load_spritesheet(basepath, name, prefix, image_options)
 		debug_output('load ' .. name .. asset_suffix .. '_description.ldata')
 		prefix = prefix or ''
 		
@@ -65,7 +65,7 @@ return module(function (resources)
 				debug_output('  sheet ' .. filename)
 				
 				-- load the texture itself
-				local texture = love.graphics.newImage(basepath .. filename)
+				local texture = love.graphics.newImage(basepath .. filename, image_options)
 				loaded_sheet.textures[filename] = texture
 				
 				-- register all the sprites in the texture

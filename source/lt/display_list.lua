@@ -515,7 +515,7 @@ local circle = class.derive(display_list, function (circle)
 	end
 	
 	function circle:render_inner(renderer, rx, ry, rscale_x, rscale_y, rr, ra)
-		render:draw_circle(self, rx, ry, rscale_x, rscale_y, rr, ra)
+		renderer:draw_circle(self, rx, ry, rscale_x, rscale_y, rr, ra)
 	end
 	
 	function circle:content_bounds()

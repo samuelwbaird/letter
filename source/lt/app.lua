@@ -66,7 +66,7 @@ return class(function (app)
 		end
 
 		function love.touchpressed(id, x, y, pressure)
-			event_dispatch.shared_instance().defer('touch_begin', { id = id, x = x, y = y })
+			event_dispatch.shared_instance():defer('touch_begin', { id = id, x = x, y = y })
 		end
 
 		function love.touchreleased(id, x, y, pressure)

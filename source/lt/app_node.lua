@@ -55,6 +55,8 @@ return class(function (app_node)
 			-- begin is called only once the view is added
 			child:begin()
 		end
+		
+		return child
 	end
 	
 	function app_node:add_button(clip, action)

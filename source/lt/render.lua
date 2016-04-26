@@ -3,6 +3,7 @@
 -- copyright 2016 Samuel Baird MIT Licence
 
 local class = require('core.class')
+local math = require('core.math')
 
 return class(function (render)
 
