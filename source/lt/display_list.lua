@@ -212,7 +212,7 @@ local display_list = class(function (display_list)
 		local children = rawget(self, 'children')
 		if children then
 			for _, child in ipairs(children) do
-				child:update_animated_clips()
+				child:update_animated_clips(delta)
 			end
 		end
 	end
