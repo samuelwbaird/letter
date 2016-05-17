@@ -104,10 +104,10 @@ local clip_data = class(function (clip_data)
 			self.content = array()
 		end
 		
-		function clip_frame:generate_instance(name)
+		function clip_frame:generate_instance(name, data)
 			local count = 1
 			for _, c in ipairs(self.content) do
-				if c.image_data == image_data then
+				if c.image_data == data or c.clip_data == data then
 					count = count + 1
 				end
 			end
@@ -117,7 +117,7 @@ local clip_data = class(function (clip_data)
 		function clip_frame:add_image_content(instance, image_data, x, y, scale_x, scale_y, rotation, alpha)
 			-- generate an instance name automatically if not supplied
 			if not instance then
-				instance = self:generate_instance('img_' .. image_data.name)
+				instance = self:generate_instance('img_' .. image_data.name, image_data)
 			end
 			local entry = {
 				instance = instance,
@@ -136,7 +136,7 @@ local clip_data = class(function (clip_data)
 		function clip_data:add_clip_content(instance, clip_data, x, y, scale_x, scale_y, rotation, alpha, frame_no)				
 			-- generate an instance name automatically if not supplied
 			if not instance then
-				instance = self:generate_instance('clip_' .. clip_data.name)
+				instance = self:generate_instance('clip_' .. clip_data.name, clip_data)
 			end
 			local entry = {
 				instance = instance,
