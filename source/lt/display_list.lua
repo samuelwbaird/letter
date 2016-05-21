@@ -335,7 +335,7 @@ local clip = class.derive(display_list, function (clip)
 					if not loop_was_set then
 						self.loop = false
 					end
-					local frames = self.clip_data.labels[frames]
+					local frames = self.clip_data.labels[arg]
 					if not frames then
 						error('unknown frame ' .. label .. ' in clip ' .. self.clip_data.name)
 					end
@@ -426,6 +426,7 @@ local clip = class.derive(display_list, function (clip)
 	end
 	
 	function clip:set_frame(frame)
+		self.current_frame = frame;
 		-- retain a list of current content (re-use objects where they match)
 		local current = {}
 		local remove = {}
