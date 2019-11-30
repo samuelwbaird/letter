@@ -80,7 +80,8 @@ return class(function (packer)
 		
 		-- score this position using a heuristic for how much it eats into the remaining space
 		for _, pos in ipairs(possible_anchor_points) do
-			pos.score = pos.rect.x * pos.rect.x + pos.rect.y * pos.rect.y
+			-- heuristic score based on the area of the bottom right position of the rect, works well
+			pos.score = (pos.rect.x + pos.rect.width) * (pos.rect.y + pos.rect.height)
 		end
 
 		-- choose the best scoring anchor point
@@ -101,6 +102,8 @@ return class(function (packer)
 				anchors:push(anchor)
 			end
 		end
+		
+		-- TODO: for better packing we would need to add additional anchors here for where the any of the lines of the new rect would intersect with existing rects if extended, creating anchors that aren't on a corner
 		
 		-- add new possible anchors at the top right and bottom left of the newly added rect
 		anchors:push({ x = selected.rect.x + selected.rect.width, y = selected.rect.y })
