@@ -97,18 +97,54 @@ return class(function (packer)
 		local anchors = array()
 		
 		-- filter out existing anchors that are now invalid
-		for _, anchor in ipairs(self.anchors) do
-			if not point_intersects(anchor, selected.rect) then
-				anchors:push(anchor)
+		local anchors_added = {} 
+		local new_anchors = array()
+		local add_new_anchor = function (anchor, specific_rect)
+			-- don't add duplicate anchors
+			local key = anchor.x .. ':' .. anchor.y
+			if anchors_added[key] then
+				return
 			end
+			anchors_added[key] = true
+			-- don't add anchors outside of the bounds
+			if anchor.x >= self.width or anchor.y >= self.height then
+				return
+			end
+			-- don't add anchors the intersect an existing rect
+			if specific_rect then
+				if point_intersects(anchor, specific_rect) then
+					return
+				end
+			else
+				for _, rect in ipairs(self.rects) do
+					if point_intersects(anchor, rect) then
+						return
+					end
+				end
+			end
+			new_anchors:push(anchor)
 		end
 		
-		-- TODO: for better packing we would need to add additional anchors here for where the any of the lines of the new rect would intersect with existing rects if extended, creating anchors that aren't on a corner
+		-- preserve existing anchors that are still valid
+		for _, anchor in ipairs(self.anchors) do
+			add_new_anchor(anchor, selected.rect)
+		end
+		
+		-- take the bottom horizontal line of the new rect and extend leftward, turning intersections into anchors
+		-- take the right hand vertical line of the new rect and extend upward, turning intersections into anchors
+		for _, rect in ipairs(self.rects) do
+			if rect.x + rect.width < selected.rect.x and rect.y < selected.rect.y + selected.rect.height and rect.y + rect.height > selected.rect.y + selected.rect.height then
+				add_new_anchor({ x = rect.x + rect.width, y = selected.rect.y + selected.rect.height })
+			end
+			if rect.y + rect.height < selected.rect.y and rect.x < selected.rect.x + selected.rect.width and rect.x + rect.width > selected.rect.x + selected.rect.width then
+				add_new_anchor({ x = selected.rect.x + selected.rect.width, y = rect.y + rect.height })
+			end
+		end		
 		
 		-- add new possible anchors at the top right and bottom left of the newly added rect
-		anchors:push({ x = selected.rect.x + selected.rect.width, y = selected.rect.y })
-		anchors:push({ x = selected.rect.x, y = selected.rect.y + selected.rect.height })
-		self.anchors = anchors
+		add_new_anchor({ x = selected.rect.x + selected.rect.width, y = selected.rect.y })
+		add_new_anchor({ x = selected.rect.x, y = selected.rect.y + selected.rect.height })
+		self.anchors = new_anchors
 		
 		-- return the position assigned
 		return selected.anchor.x, selected.anchor.y
