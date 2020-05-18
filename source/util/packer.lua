@@ -56,7 +56,8 @@ return class(function (packer)
 					x = anchor.x,
 					y = anchor.y,
 					width = width,
-					height = height
+					height = height,
+					info = info,
 				}
 				for _, existing_rect in ipairs(self.rects) do
 					if rect_intersects(rect, existing_rect) then
