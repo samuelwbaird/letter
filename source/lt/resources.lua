@@ -101,15 +101,22 @@ return module(function (resources)
 			clip = function (name, frames)
 				local clip_data = display_data.clip_data(name)
 				for frame_no, frame in ipairs(frames) do
-					local frame_data = clip_data:add_frame(frame.label)
-					for _, entry in ipairs(frame.content or {}) do
-						if entry.image then
-							assert(loaded_sheet.images[entry.image])
-							frame_data:add_image_content(
-								entry.instance, 
-								loaded_sheet.images[entry.image], 
-								unpack(entry.transform)
-							)
+					if type(frame) == 'string' then
+						-- if frame is a string, then short cut to treat this as a single frame of image content
+						local frame_data = clip_data:add_frame(frame.label)
+						assert(loaded_sheet.images[frame])
+						frame_data:add_image('image', frame, 0, 0, 1, 1, 0, 1)
+					else
+						local frame_data = clip_data:add_frame(frame.label)
+						for _, entry in ipairs(frame.content or {}) do
+							if entry.image then
+								assert(loaded_sheet.images[entry.image])
+								frame_data:add_image_content(
+									entry.instance, 
+									loaded_sheet.images[entry.image], 
+									unpack(entry.transform)
+								)
+							end
 						end
 					end
 				end
