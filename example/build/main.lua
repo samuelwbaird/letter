@@ -3,7 +3,7 @@
 local app = require('lt.app')
 
 app.launch(
--- preferred logical screen size
+	-- preferred logical screen size
 	{
 		width = 480,
 		height = 320

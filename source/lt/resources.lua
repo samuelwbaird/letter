@@ -105,7 +105,7 @@ return module(function (resources)
 						-- if frame is a string, then short cut to treat this as a single frame of image content
 						local frame_data = clip_data:add_frame(frame.label)
 						assert(loaded_sheet.images[frame])
-						frame_data:add_image('image', frame, 0, 0, 1, 1, 0, 1)
+						frame_data:add_image_content(nil, loaded_sheet.images[frame], 0, 0, 1, 1, 0, 1)
 					else
 						local frame_data = clip_data:add_frame(frame.label)
 						for _, entry in ipairs(frame.content or {}) do
@@ -140,6 +140,8 @@ return module(function (resources)
 				end
 			end
 		end
+		
+		return loaded_sheet
 	end
 
 	-- TODO: unload

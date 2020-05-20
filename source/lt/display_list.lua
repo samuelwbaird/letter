@@ -469,7 +469,7 @@ local clip = class.derive(display_list, function (clip)
 			child.rotation = content.rotation
 			child.alpha = content.alpha
 			if content.frame_no then
-				-- child:goto_and_stop(content.frame_no)
+				child:goto_and_stop(content.frame_no)
 			end
 		end
 		
