@@ -204,15 +204,15 @@ local display_list = class(function (display_list)
 
 	-- render -----------------------------------------
 	
-	function display_list:update_animated_clips(delta)
+	function display_list:update_animated_clips()
 		if self.update then
-			self:update(delta)
+			self:update()
 		end
 		
 		local children = rawget(self, 'children')
 		if children then
 			for _, child in ipairs(children) do
-				child:update_animated_clips(delta)
+				child:update_animated_clips()
 			end
 		end
 	end
@@ -392,8 +392,8 @@ local clip = class.derive(display_list, function (clip)
 		self.is_playing = false
 	end
 	
-	function clip:update(delta)
-		-- update animation pointer by one frame (delta ignored)
+	function clip:update()
+		-- update animation pointer by one frame
 		if self.is_playing then
 			-- update the playback position
 			self.playback_position = self.playback_position + self.playback_speed

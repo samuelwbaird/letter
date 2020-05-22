@@ -109,51 +109,31 @@ return class(function (app)
 			})
 			app:set_scene(app.initial_scene)
 			
-			local last_frame_time = love.timer.getTime()
-			local fps = 60.0
-			local frame_time = 1.0 / fps
 			local renderer = render()
 	
 			-- fixed framerate loop
 			while app_is_running do
 				if app.paused then
 					if love.timer then love.timer.sleep(0.1) end
-					last_frame_time = love.timer.getTime()
 					love.handle_native_events()
+					app.update_frame_timer:reset()
+					app.animation_frame_timer:reset()
 			
 				else
-					local now = love.timer.getTime()
-					local delta = now - last_frame_time
-					-- make sure we sleep for at least most of a whole frame, rely on vsync for final timing
-					if delta < frame_time then
-						love.timer.sleep(frame_time - delta)
-					end
+					-- some compatability with love timer class
+					love.timer.step()
 			
-					local frames = math.floor((delta / frame_time) + 0.5)
-					if frames < 1 then
-						-- produce at least one frame (assuming vsync will keep us at 60)
-						frames = 1
-					elseif frames > 10 then
-						-- if there is a big pause then treat it as a pause
-						frames = 1
+					-- event handling
+					love.handle_native_events()
+					event_dispatch.shared_instance():dispatch_deferred()
+					
+					-- main update tick, and render if required
+					if app:update() then
+						app:render(renderer)
+					else					
+						-- nominal sleep time for the thread
+						love.timer.sleep(0.005)
 					end
-			
-					for frame = 1, frames do
-						app.time = love.timer.getTime()
-						-- some compatability with love timer class
-						love.timer.step()
-				
-						-- event handling
-						love.handle_native_events()
-						event_dispatch.shared_instance():dispatch_deferred()
-				
-						-- fixed update
-						app:update(frame_time)
-					end
-			
-					-- render, relying on vsync to round out the timing
-					app:render(renderer)
-					last_frame_time = now
 				end
 			end
 	
@@ -163,6 +143,47 @@ return class(function (app)
 			end	
 		end
 	end
+
+	local fixed_rate_timer = class(function (fixed_rate_timer)
+		function fixed_rate_timer:init(fps, min_frames, max_frames, reset_frames)
+			self:set_fps(fps, min_frames, max_frames, reset_frames)
+		end
+
+		function fixed_rate_timer:set_fps(fps, min_frames, max_frames, reset_frames)
+			self.fps = fps
+			self.min_frames = min_frames or 1
+			self.max_frames = max_frames or 4
+			self.reset_frames = reset_frames or 16
+			self:reset()
+		end
+	
+		function fixed_rate_timer:reset()
+			self.last_time = love.timer.getTime()
+			self.time_accumulated = 0
+		end
+	
+		function fixed_rate_timer:get_frames_due()
+			local now = love.timer.getTime()
+			local delta = now - self.last_time
+			self.time_accumulated = self.time_accumulated + delta
+			self.last_time = now
+		
+			local frames_due = math.floor(self.time_accumulated * self.fps)
+			if self.reset_frames > 0 and frames_due > self.reset_frames then
+				self.time_accumulated = 0
+				frames_due = 0
+			elseif self.max_frames > 0 and frames_due > self.max_frames then
+				self.time_accumulated = 0
+				frames_due = self.max_frames
+			elseif self.min_frames > 0 and frames_due < self.min_frames then
+				frames_due = 0
+			else
+				self.time_accumulated = self.time_accumulated - (frames_due / self.fps)
+			end
+		
+			return frames_due
+		end
+	end)
 	
 	function app:init(reference_screen_size, asset_scales, initial_scene)
 		-- root objects
@@ -177,6 +198,9 @@ return class(function (app)
 			width = 0,
 			height = 0,
 		}
+		
+		self.update_frame_timer = fixed_rate_timer(60)
+		self.animation_frame_timer = fixed_rate_timer(60)
 
 		-- set up the root view and scaling
 		self:configure_screen_size(reference_screen_size, asset_scales)
@@ -227,8 +251,12 @@ return class(function (app)
 		-- make sure spritesheets are loaded with the right resolution assets
 		self.resources.set_asset_suffix(selected.suffix)
 		-- make sure fonts are generated with the right resolution assets
-		display_data.font.default_asset_scale = selected.scale
-		
+		display_data.font.default_asset_scale = selected.scale		
+	end
+	
+	function app:set_fps(fps, animation_fps, min_frames, max_frames, reset_frames)
+		self.update_frame_timer:set_fps(fps, min_frames, max_frames, reset_frames)
+		self.animation_frame_timer:set_fps(animation_fps or fps, min_frames, max_frames, reset_frames)
 	end
 
 	function app:dispose()
@@ -263,17 +291,34 @@ return class(function (app)
 		self.paused = false
 	end
 
-	function app:update(delta)
-		-- animation steps prior to entering into update code
-		self.root_view:update_animated_clips(delta)
+	function app:update()
+		-- interleave animation and update frames
+		local update_frames = self.update_frame_timer:get_frames_due()
+		local animation_frames = self.animation_frame_timer:get_frames_due()
+		local had_updates = false
+		
+		while update_frames > 0 or animation_frames > 0 do
+			if animation_frames >= update_frames then
+				animation_frames = animation_frames - 1
+				if self.root_view then
+					self.root_view:update_animated_clips()
+				end
+			end
+			if update_frames > 0 then
+				update_frames = update_frames - 1
+
+				-- any delayed code on the main thread
+				self.dispatch:update()
 	
-		-- any delayed code on the main thread
-		self.dispatch:update()
-	
-		-- scene specific update
-		if self.current_scene then
-			self.current_scene:update(delta)
+				-- scene specific update
+				if self.current_scene then
+					self.current_scene:update()
+					had_updates = true
+				end
+			end
 		end
+		
+		return had_updates
 	end
 
 	function app:render(renderer)
