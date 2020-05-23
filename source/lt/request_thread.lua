@@ -388,4 +388,4 @@ local network_thread = class(function (network_thread)
 	
 end)
 
-return class.package({ request_thread = request_thread, network_thread = network_thread }, network_thread.new)
+return class.package({ request_thread = request_thread, network_thread = network_thread }, request_thread.new)
