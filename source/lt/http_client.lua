@@ -57,6 +57,16 @@ local http_client = class.derive(app_node, function (http_client)
 	function http_client:update()
 		-- check for any messages coming back from the network thread
 		-- and dispatch them back to callers in the main thread
+		local response = self.channel_from_thread:pop()
+		if response then
+			if response.receipt and self.receipts[response.receipt] then
+				local with_result = self.receipts[response.receipt].with_result
+				self.receipts[response.receipt] = nil
+				if with_result then
+					with_result(response)
+				end
+			end
+		end
 	end
 	
 	function http_client:dispose()
@@ -78,13 +88,14 @@ end)
 local wrapped_socket = class(function (wrapped_socket)
 	-- wraps a normal socket connect and does keep alive connection behaviour by default
 	-- ignores close and open until the host or port changes or the connection timesout
-	-- TODO: if luasec module is available then also support https connections here
+	-- if luasec library (pref 0.9 and above) is available then also support https connections here
 
 	function wrapped_socket:init()
 		self.timeout = 30
 		self.real_socket = nil
 		self.host = nil
 		self.port = nil
+		self.use_ssl = false
 	end
 
 	function wrapped_socket:settimeout(timeout)
@@ -105,9 +116,32 @@ local wrapped_socket = class(function (wrapped_socket)
 	end
 	
 	function wrapped_socket:actually_connect()
-		self.real_socket = require('socket').tcp()
-		self.real_socket:connect(self.host, self.port)
-		self.real_socket:settimeout(self.timeout)
+		local socket = require('socket')
+		
+		if self.use_ssl then
+			-- note that a config of tlsv1.2 or 1.3 should be considered pretty much required
+			-- luasec version 0.9 supports this and must be included alongside or compiled in with love2d
+			local ssl = require("ssl")
+			local cfg = {
+			  protocol = "tlsv1_3",
+			  options = "all",
+			  verify = "none",
+			  mode = 'client',
+			}
+			
+			-- override by connecting to port 443
+			local plain_socket = socket.try(socket.tcp())
+			plain_socket:connect(self.host, 443)
+			plain_socket:settimeout(self.timeout)
+			
+			-- wrap the plain socket in ssl and perform the handshake
+			self.real_socket = socket.try(ssl.wrap(plain_socket, cfg))
+			self.real_socket:dohandshake()
+		else
+			self.real_socket = socket.tcp()
+			self.real_socket:connect(self.host, self.port)
+			self.real_socket:settimeout(self.timeout)
+		end
 	end
 	
 	function wrapped_socket:send(...)
@@ -155,6 +189,7 @@ local http_client_background_thread = class(function (http_client_background_thr
 		
 		-- code is now running on the request thread to actually perform the network requests
 		self.http = require('socket.http')
+		
 		-- pretends to be a real socket but acts like a keep-alive socket that only closes when needed
 		self.wrapped_socket = wrapped_socket()
 	end
@@ -167,7 +202,7 @@ local http_client_background_thread = class(function (http_client_background_thr
 			end
 
 			-- prepare the url request
-			self.wrapped_socket.timeout = request.timeout or 30
+			self.wrapped_socket.timeout = request.timeout or 60
 			local headers = request.headers or {}
 			local body = request.body
 			local encode_objects = type(body) == 'table'
@@ -181,10 +216,13 @@ local http_client_background_thread = class(function (http_client_background_thr
 				headers['Content-length'] = #body				
 			end
 
-			-- perform the query using luasocket
+			-- detect when we need to wrap this in an SSL connection
+			self.wrapped_socket.use_ssl = (request.url:sub(1, 5):lower() == 'https')
+			
+			-- print('network thread request: ' .. request.url)
 			local output = {}
 			local r, status, headers = self.http.request({
-			  method = request.method,
+			  method = request.method:upper(),
 			  url = request.url,
 			  headers = headers,
 			  sink = ltn12.sink.table(output),
@@ -194,8 +232,12 @@ local http_client_background_thread = class(function (http_client_background_thr
 				  return self.wrapped_socket
 			  end
 			})
+			-- print('network thread recevied: ' .. (status or 'no connection'))
 			
 			-- prepare the response
+			if tonumber(status) then
+				status = tonumber(status)
+			end
 			headers = headers or {}
 			local body = table.concat(output)
 			if encode_objects then
@@ -204,7 +246,7 @@ local http_client_background_thread = class(function (http_client_background_thr
 			self.channel_to_client:push({
 				receipt = request.receipt,
 				complete = (r ~= nil),
-				success = (r ~= nil) and type(status) == 'number' and (math.floor(status / 200) == 2),
+				success = (r ~= nil) and type(status) == 'number' and (math.floor(status / 100) == 2),
 				status = status,
 				headers = headers,
 				body = body,
