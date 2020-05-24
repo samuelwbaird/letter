@@ -560,7 +560,7 @@ local label = class.derive(display_list, function (label)
 		return 
 			(offset) / asset_scale,
 			0, 
-			(width + offset) / asset_scale,
+			width / asset_scale,
 			((lines and #lines or 1) * (font:getLineHeight() or 1) * (font:getHeight() or font.size)) / asset_scale
 	end
 	

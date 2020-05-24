@@ -70,7 +70,7 @@ return class(function (render)
 		end
 		
 		self.has_batched_data = true
-		self.sprite_batch:setColor(255, 255, 255, ra * 255)
+		self.sprite_batch:setColor(1, 1, 1, ra)
 		self.sprite_batch:add(quad, rx, ry, rr, rscale_x, rscale_y, ox, oy)
 	end	
 	
@@ -89,7 +89,7 @@ return class(function (render)
 	function render:flush_batch()
 		if self.has_batched_data then
 			love.graphics.origin()
-			love.graphics.setColor(255, 255, 255, 255)
+			love.graphics.setColor(1, 1, 1, 1)
 			love.graphics.draw(self.sprite_batch)
 			
 			self.sprite_batch:clear()

@@ -20,7 +20,7 @@ return class.derive(app_node, function (hints)
 	function hints:begin()
 		-- hints are nominally 460 wide and centered
 		self.view.x = (app.screen.width - 460) * 0.5
-		self.rect = self.view:add_rect(460, 28, display_data.color(220, 210, 140))
+		self.rect = self.view:add_rect(460, 28, display_data.color(0.9, 0.8, 0.5))
 		
 		self.label = self.view:add_label(display_data.font(13), {
 			align = "center",

@@ -1,6 +1,6 @@
 function love.conf(t)
     t.identity = "love_project"			-- The name of the save directory (string)
-    t.version = "0.10.0"                -- The LÖVE version this game was made for (string)
+    t.version = "11.3"                -- The LÖVE version this game was made for (string)
 
     t.window.title = "Love Project"     -- The window title (string)
     t.window.icon = nil                 -- Filepath to an image to use as the window's icon (string)

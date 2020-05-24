@@ -27,15 +27,26 @@ return class(function (button)
 	
 	-- constructor --------------------------------------------------------
 	
-	function button:init(clip, action, event_dispatch)
+	function button:init(clip, action, event_dispatch, init_values)
 		-- base properties for a button
 		self.clip = clip
 		self.action = action
 		self.event_dispatch = event_dispatch
 		
 		-- override these properties if required
-		self.up_frame = 1
-		self.down_frame = 2
+		if clip.goto then
+			-- if the clip appears to be an animated clip then default to using these frames as the button states
+			self.up_frame = 1
+			self.down_frame = 2
+		end
+		
+		if init_values then
+			for k, v in pairs(init_values) do
+				self[k] = v
+			end
+		end
+		
+		
 		self.is_down = false
 		self.is_releasing = false
 		
@@ -85,7 +96,7 @@ return class(function (button)
 				button.on_button_down()
 				if type(self.down_frame) == 'function' then
 					self.down_frame(self)
-				else
+				elseif self.clip.goto then
 					self.clip:goto(self.down_frame)
 				end
 			end
@@ -95,7 +106,7 @@ return class(function (button)
 				button.on_button_up()
 				if type(self.up_frame) == 'function' then
 					self.up_frame(self)
-				else
+				elseif self.clip.goto then
 					self.clip:goto(self.up_frame)
 				end
 			end

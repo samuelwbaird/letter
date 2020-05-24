@@ -11,6 +11,7 @@ local cache = require('core.cache')
 
 local color = class(function (color)
 
+	-- in love2d 11 onwards, colours are now 0 - 1 scale
 	
 	function color:init(r, g, b, alpha)
 		self.r = r or 0 
@@ -20,10 +21,10 @@ local color = class(function (color)
 	end
 	
 	function color:unpack_with_alpha(alpha)
-		return self.r, self.g, self.b, self.alpha * alpha * 255
+		return self.r, self.g, self.b, self.alpha * alpha
 	end
 
-	color.white = color(255, 255, 255)
+	color.white = color(1, 1, 1)
 	color.black = color(0, 0, 0)
 	color.clear = color(0, 0, 0, 0)
 	

@@ -59,8 +59,8 @@ return class(function (app_node)
 		return child
 	end
 	
-	function app_node:add_button(clip, action)
-		local button = button(clip, action)
+	function app_node:add_button(clip, action, event_dispatch, init_values)
+		local button = button(clip, action, event_dispatch, init_values)
 		self:add_disposable(button)
 		return button
 	end
