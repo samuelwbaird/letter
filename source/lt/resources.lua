@@ -29,6 +29,33 @@ return module(function (resources)
 		return clips[name]
 	end
 	
+	function resources.get_combined_clip_data(from_clips)
+		local combined_clip_data = display_data.clip_data()
+		for _, other in ipairs(from_clips) do
+			local other_data = clips[other]
+			-- create a label for the whole clip being combined
+			combined_clip_data.labels[other] = { #combined_clip_data.frames + 1, #combined_clip_data.frames + #other_data.frames }
+			-- merge in labels for this other clip
+			for name, frames in pairs(other_data.labels) do
+				combined_clip_data.labels[name] = {
+					frames[1] + #combined_clip_data.frames,
+					frames[2] + #combined_clip_data.frames,
+				}
+			end
+			for i, frame_data in ipairs(other_data.frames) do
+				combined_clip_data.frames:push(frame_data)
+			end
+		end
+		combined_clip_data:link_resources(resources)
+		return combined_clip_data
+	end
+	
+	function resources.create_combined_clip_data(name, from_clips)
+		clips[name] = resources.get_combined_clip_data(from_clips)
+		clips[name].name = name
+		return clips[name]
+	end
+	
 	-- asset loading -------------------------------------
 
 	function resources.set_asset_suffix(suffix)

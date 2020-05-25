@@ -341,6 +341,7 @@ local clip = class.derive(display_list, function (clip)
 					end
 					self.start_frame = frames[1]
 					self.end_frame = frames[2]
+					self.playback_position = self.start_frame
 					label_was_set = true
 				end
 			elseif type(arg) == 'function' then
